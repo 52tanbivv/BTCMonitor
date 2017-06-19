@@ -87,7 +87,7 @@ def save(request):
     print(datetime.datetime.now())
     data_type_choices = models.PriceDifference.data_type_choices
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    with open("{}.csv".format(today),"w") as f:
+    with open("static/data_files{}.csv".format(today),"w") as f:
         f.write("序号,"+"btc-e价格,"+"火币网价格,"+"差价,"+"类型,"+"时间\n")
         for i,row in enumerate(today_data,1):
             btc_e_price = row.btc_e_price
