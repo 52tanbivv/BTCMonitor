@@ -140,6 +140,8 @@ def save(request):
     """
     将当天的数据保存为excel
     """
+    is_save = request.GET.get("is_save")
+
     now = timezone.now()
     start = now - datetime.timedelta(hours=23, minutes=59, seconds=59)
 

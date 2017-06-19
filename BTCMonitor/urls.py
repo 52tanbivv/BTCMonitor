@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^$', views.index, name="index"),
     url(r'^updata/', views.updata, name="updata"),
     url(r'^save/', views.save, name="save"),
+    url(r'^save_data/', views.save_data, name="save_data"),
 ]
