@@ -51,7 +51,7 @@
     <button id="idOpenAudio" onclick="openAudio(this)" type="button" class="btn btn-danger">打开警报音</button>
     <button id="idCloseAudio" onclick="closeAudio(this)" type="button" class="btn btn-success hidden">关闭警报音</button>
     <button id="idsaveData" type="button" class="btn btn-default"><a href="{% url 'save_data' %}">下载未下载的数据</a></button>
-    <button id="idsaveData" type="button" class="btn btn-default"><a href="{% url 'save' %}">保存今天的数据</a></button>
+    <button id="idsaveData" onclick="saveData()" type="button" class="btn btn-default">保存今天的数据</button>
     <div class="alert alert-danger hidden" role="alert">警告：有差值超过指定范围！</div>
     <table class="table table-bordered">
       <thead>
@@ -132,9 +132,7 @@
         // 向后台请求保存当天的数据
         $.ajax({
             url:'save/',
-            success:function (args) {
-                console.log(args)
-            }
+
         })
     }
     
