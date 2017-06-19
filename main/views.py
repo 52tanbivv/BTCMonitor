@@ -107,10 +107,8 @@ def save(request):
     wrapper = FileWrapper(open(filename, 'rb'))
     response = HttpResponse(wrapper, content_type='text/plain')
     response['Content-Length'] = os.path.getsize(filename)
-    response['Content-Encoding'] = 'utf-8'
-    response['Content-Disposition'] = 'attachment;filename=%s' % filename
+    response['Content-Disposition'] = 'attachment;filename={}'.format(filename)
     return response
-
 
 
 
