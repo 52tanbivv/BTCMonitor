@@ -173,9 +173,9 @@ def save_data(request):
     for file in file_objs:
         zip_file.write(file.file_path)
 
+    zip_file.close()
 
-
-    wrapper = FileWrapper(zip_file)
+    wrapper = FileWrapper(open("log.zip", 'rb'))
     response = HttpResponse(wrapper, content_type='text/plain')
     response['Content-Length'] = os.path.getsize("log.zip")
     response['Content-Encoding'] = 'utf-8'
