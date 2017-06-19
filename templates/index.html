@@ -50,7 +50,7 @@
 <div class="container">
     <button id="idOpenAudio" onclick="openAudio(this)" type="button" class="btn btn-danger">打开警报音</button>
     <button id="idCloseAudio" onclick="closeAudio(this)" type="button" class="btn btn-success hidden">关闭警报音</button>
-    <button id="idsaveData" onclick="saveData()" type="button" class="btn btn-default">保存今天的数据</button>
+    <button id="idsaveData" type="button" class="btn btn-default"><a href="{% url 'save' %}">保存今天的数据</a></button>
     <div class="alert alert-danger hidden" role="alert">警告：有差值超过指定范围！</div>
     <table class="table table-bordered">
       <thead>
@@ -130,7 +130,10 @@
     function saveData() {
         // 向后台请求保存当天的数据
         $.ajax({
-            url:'save/'
+            url:'save/',
+            success:function (args) {
+                console.log(args)
+            }
         })
     }
     
@@ -257,37 +260,50 @@
     
     function getAlarmNum() {
         // 获得差值警告阈值
-        LTCtoBTCAlarmNum1 = $("#idLTCtoBTCForm1").val();
-        LTCtoBTCAlarmNum2 = $("#idLTCtoBTCForm2").val();
-        ETHtoBTCAlarmNum1 = $("#idETHtoBTCForm1").val();
-        ETHtoBTCAlarmNum2 = $("#idETHtoBTCForm2").val();
-        ETHtoLTCAlarmNum1 = $("#idETHtoLTCForm1").val();
-        ETHtoLTCAlarmNum2 = $("#idETHtoLTCForm2").val();
+        LTCtoBTCAlarmNum1 = Number($("#idLTCtoBTCForm1").val());
+        LTCtoBTCAlarmNum2 = Number($("#idLTCtoBTCForm2").val());
+        ETHtoBTCAlarmNum1 = Number($("#idETHtoBTCForm1").val());
+        ETHtoBTCAlarmNum2 = Number($("#idETHtoBTCForm2").val());
+        ETHtoLTCAlarmNum1 = Number($("#idETHtoLTCForm1").val());
+        ETHtoLTCAlarmNum2 = Number($("#idETHtoLTCForm2").val());
 
     }
     
     function LTCtoBTCAlarm() {
-        if(LTCtoBTCPriceDifference>LTCtoBTCAlarmNum1 || LTCtoBTCPriceDifference<LTCtoBTCAlarmNum2){
-            console.log("警报1");
-            return true
+        if(LTCtoBTCAlarmNum1 && LTCtoBTCAlarmNum2) {
+            if (LTCtoBTCPriceDifference > LTCtoBTCAlarmNum1 || LTCtoBTCPriceDifference < LTCtoBTCAlarmNum2) {
+                console.log("警报1");
+                return true
+            } else {
+                return false
+            }
         }else {
             return false
         }
     }
 
     function ETHtoBTCAlarm() {
-        if(ETHtoBTCPriceDifference>ETHtoBTCAlarmNum1 || ETHtoBTCPriceDifference<ETHtoBTCAlarmNum2){
-            console.log("警报2");
-            return true
+        if(ETHtoBTCAlarmNum1 && ETHtoBTCAlarmNum2) {
+            if (ETHtoBTCPriceDifference > ETHtoBTCAlarmNum1 || ETHtoBTCPriceDifference < ETHtoBTCAlarmNum2) {
+                console.log("警报2");
+                return true
+            } else {
+                return false
+            }
         }else {
             return false
         }
     }
 
     function ETHtoLTCAlarm() {
-        if(ETHtoLTCPriceDifference>ETHtoLTCAlarmNum1 || ETHtoLTCPriceDifference<ETHtoLTCAlarmNum2){
-            console.log("警报3");
-            return true
+        if(ETHtoLTCAlarmNum1 && ETHtoLTCAlarmNum2) {
+            if (ETHtoLTCPriceDifference > ETHtoLTCAlarmNum1 || ETHtoLTCPriceDifference < ETHtoLTCAlarmNum2) {
+                console.log("警报3");
+
+                return true
+            } else {
+                return false
+            }
         }else {
             return false
         }

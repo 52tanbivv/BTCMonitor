@@ -1,11 +1,18 @@
 import json
 import datetime
+import os
+import mimetypes
 
 from django.shortcuts import render, HttpResponse
+from django.http import StreamingHttpResponse
+from wsgiref.util import FileWrapper
 from django.utils import timezone
+from django.conf import settings
 
 from main import models
 from backend.electronicurrency import BTCECurrency, HuoBiECurrency
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def index(request):
@@ -82,24 +89,27 @@ def save(request):
     start = now - datetime.timedelta(hours=23, minutes=59, seconds=59)
 
     today_data = models.PriceDifference.objects.filter(ctime__gt=start)
-
-    print(today_data)
-    print(datetime.datetime.now())
+    print(BASE_DIR)
     data_type_choices = models.PriceDifference.data_type_choices
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    with open("static/data_files{}.csv".format(today),"w") as f:
-        f.write("序号,"+"btc-e价格,"+"火币网价格,"+"差价,"+"类型,"+"时间\n")
-        for i,row in enumerate(today_data,1):
-            btc_e_price = row.btc_e_price
-            huobi_price = row.huobi_price
-            price_difference = row.price_difference
-            ctime = row.ctime.strftime("%Y-%m-%d %H:%M")
-            print(ctime)
-            print(type(ctime))
-            data_type = data_type_choices[int(row.data_type)-1][1]
-            f.write("{},{},{},{},{},{}\n".format(i,btc_e_price,huobi_price,price_difference,data_type,ctime))
-
-    return HttpResponse("保存成功")
+    f = open("static/data_files/{}.csv".format(today),"w")
+    f.write("序号,"+"btc-e价格,"+"火币网价格,"+"差价,"+"类型,"+"时间\n")
+    for i,row in enumerate(today_data,1):
+        btc_e_price = row.btc_e_price
+        huobi_price = row.huobi_price
+        price_difference = row.price_difference
+        ctime = row.ctime.strftime("%Y-%m-%d %H:%M")
+        data_type = data_type_choices[int(row.data_type)-1][1]
+        f.write("{},{},{},{},{},{}\n".format(i,btc_e_price,huobi_price,price_difference,data_type,ctime))
+    the_file = "static/data_files/{}.csv".format(today)
+    filename = os.path.join(BASE_DIR, the_file)
+    print(filename)
+    wrapper = FileWrapper(open(filename, 'rb'))
+    response = HttpResponse(wrapper, content_type='text/plain')
+    response['Content-Length'] = os.path.getsize(filename)
+    response['Content-Encoding'] = 'utf-8'
+    response['Content-Disposition'] = 'attachment;filename=%s' % filename
+    return response
 
 
 
