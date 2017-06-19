@@ -149,7 +149,7 @@ def save(request):
     print(BASE_DIR)
     data_type_choices = models.PriceDifference.data_type_choices
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    data_file_path = "/root/BTCMonitor/static/data_files/{}.csv".format(today)
+    data_file_path = "static/data_files/{}.csv".format(today)
     f = open(data_file_path,"w", encoding="utf-8")
     f.write("序号,"+"btc-e价格,"+"火币网价格,"+"差价,"+"类型,"+"时间\n")
     for i,row in enumerate(today_data,1):
@@ -184,8 +184,7 @@ def save_data(request):
 
     zip_file.close()
 
-    for file_obj in file_objs:
-        file_obj.objects.update(is_download=True)
+    file_objs.update(is_download=True)
 
     return response
 
