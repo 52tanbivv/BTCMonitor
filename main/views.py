@@ -140,6 +140,8 @@ def save(request):
     """
     将当天的数据保存为excel
     """
+    is_save = request.GET.get("is_save")
+
     now = timezone.now()
     start = now - datetime.timedelta(hours=23, minutes=59, seconds=59)
 
@@ -147,8 +149,8 @@ def save(request):
     print(BASE_DIR)
     data_type_choices = models.PriceDifference.data_type_choices
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    data_file_path = "\root\BTCMonitor\static\data_files\{}.csv".format(today)
-    f = open(data_file_path, "w", encoding="utf-8")
+    data_file_path = "/root/BTCMonitor/static/data_files/{}.csv".format(today)
+    f = open(data_file_path,"w", encoding="utf-8")
     f.write("序号,"+"btc-e价格,"+"火币网价格,"+"差价,"+"类型,"+"时间\n")
     for i,row in enumerate(today_data,1):
         btc_e_price = row.btc_e_price
@@ -157,25 +159,22 @@ def save(request):
         ctime = row.ctime.strftime("%Y-%m-%d %H:%M")
         data_type = data_type_choices[int(row.data_type)-1][1]
         f.write("{},{},{},{},{},{}\n".format(i,btc_e_price,huobi_price,price_difference,data_type,ctime))
-    models.DataFiles.objects.create(file_path=data_file_path)
+    models.DataFiles.objects.create(file_path = data_file_path)
+
+
     return HttpResponse("...")
 
 
 
 
 def save_data(request):
-    imz = InMemoryZip()
+    zip_file = zipfile.ZipFile("log.zip", "w", zipfile.ZIP_DEFLATED)
     file_objs = models.DataFiles.objects.filter(is_download=False)
-    print(file_objs)
     for file in file_objs:
-        imz.appendFile(file.file_path)
-
-    data = imz.read()
+        zip_file.write(file.file_path)
 
     response = HttpResponse(mimetype="application/octet-stream")
     response["Content-Disposition"] = "attachment; log.zip"
-    response["Content-Length"] = len(data)
-    response.write(data)
 
     for file_obj in file_objs:
         file_obj.objects.update(is_download=True)
