@@ -41,3 +41,11 @@ class PriceDifference(models.Model):
 
 
     ctime = models.DateTimeField(auto_now_add=True)
+
+class DataFiles(models.Model):
+    file_path = models.CharField(max_length=128)
+    is_download = models.BooleanField(default=False)
+
+    ctime = models.DateTimeField(auto_now_add=True)
+
+

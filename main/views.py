@@ -2,6 +2,11 @@ import json
 import datetime
 import os
 import mimetypes
+import zipfile
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from django.shortcuts import render, HttpResponse
 from django.http import StreamingHttpResponse
@@ -13,6 +18,56 @@ from main import models
 from backend.electronicurrency import BTCECurrency, HuoBiECurrency
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+class InMemoryZip(object):
+    def __init__(self):
+        # Create the in-memory file-like object
+        self.in_memory_zip = StringIO()
+
+    def appendFile(self, file_path, file_name=None):
+        u"从本地磁盘读取文件，并将其添加到压缩文件中"
+
+        if file_name is None:
+            p, fn = os.path.split(file_path)
+        else:
+            fn = file_name
+
+        c = open(file_path, "rb").read()
+        self.append(fn, c)
+
+        return self
+
+    def append(self, filename_in_zip, file_contents):
+        """Appends a file with name filename_in_zip and contents of
+                  file_contents to the in-memory zip."""
+
+        # Get a handle to the in-memory zip in append mode
+        zf = zipfile.ZipFile(self.in_memory_zip, "a", zipfile.ZIP_DEFLATED, False)
+
+        # Write the file to the in-memory zip
+        zf.writestr(filename_in_zip, file_contents)
+
+        # Mark the files as having been created on Windows so that
+        # Unix permissions are not inferred as 0000
+        for zfile in zf.filelist:
+            zfile.create_system = 0
+
+        return self
+
+    def read(self):
+        """Returns a string with the contents of the in-memory zip."""
+
+        self.in_memory_zip.seek(0)
+
+        return self.in_memory_zip.read()
+
+    def writetofile(self, filename):
+        """Writes the in-memory zip to a file."""
+
+        f = open(filename, "wb")
+        f.write(self.read())
+        f.close()
 
 
 def index(request):
@@ -92,7 +147,8 @@ def save(request):
     print(BASE_DIR)
     data_type_choices = models.PriceDifference.data_type_choices
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    f = open("/root/BTCMonitor/static/data_files/{}.csv".format(today),"w")
+    data_file_path = "/root/BTCMonitor/static/data_files/{}.csv".format(today)
+    f = open(data_file_path,"w", encoding="utf-8")
     f.write("序号,"+"btc-e价格,"+"火币网价格,"+"差价,"+"类型,"+"时间\n")
     for i,row in enumerate(today_data,1):
         btc_e_price = row.btc_e_price
@@ -101,14 +157,30 @@ def save(request):
         ctime = row.ctime.strftime("%Y-%m-%d %H:%M")
         data_type = data_type_choices[int(row.data_type)-1][1]
         f.write("{},{},{},{},{},{}\n".format(i,btc_e_price,huobi_price,price_difference,data_type,ctime))
-    the_file = "/root/BTCMonitor/static/data_files/{}.csv".format(today)
-    filename = the_file
-    print(filename)
-    wrapper = FileWrapper(open(filename, 'rb'))
-    response = HttpResponse(wrapper, content_type='text/plain')
-    response['Content-Length'] = os.path.getsize(filename)
-    response['Content-Disposition'] = 'attachment;filename={}'.format(filename)
+        models.DataFiles.objects.create(file_path = data_file_path)
+    return HttpResponse("...")
+
+
+
+
+def save_data(request):
+    imz = InMemoryZip()
+    file_objs = models.DataFiles.objects.filter(is_download=False)
+    for file in file_objs:
+        imz.appendFile(file.file_path)
+
+    data = imz.read()
+
+    response = HttpResponse(mimetype="application/octet-stream")
+    response["Content-Disposition"] = "attachment; log.zip"
+    response["Content-Length"] = len(data)
+    response.write(data)
+
+    for file_obj in file_objs:
+        file_obj.objects.update(is_download=True)
+
     return response
+
 
 
 
