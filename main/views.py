@@ -173,8 +173,16 @@ def save_data(request):
     for file in file_objs:
         zip_file.write(file.file_path)
 
-    response = HttpResponse(mimetype="application/octet-stream")
-    response["Content-Disposition"] = "attachment; log.zip"
+
+
+    wrapper = FileWrapper(zip_file)
+    response = HttpResponse(wrapper, content_type='text/plain')
+    response['Content-Length'] = os.path.getsize("log.zip")
+    response['Content-Encoding'] = 'utf-8'
+    response['Content-Disposition'] = 'attachment;filename=%s' % "log.zip"
+
+
+    zip_file.close()
 
     for file_obj in file_objs:
         file_obj.objects.update(is_download=True)
