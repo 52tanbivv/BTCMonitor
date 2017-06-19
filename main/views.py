@@ -102,7 +102,7 @@ def save(request):
         data_type = data_type_choices[int(row.data_type)-1][1]
         f.write("{},{},{},{},{},{}\n".format(i,btc_e_price,huobi_price,price_difference,data_type,ctime))
     the_file = "static/data_files/{}.csv".format(today)
-    filename = os.path.join(BASE_DIR, the_file)
+    filename = the_file
     print(filename)
     wrapper = FileWrapper(open(filename, 'rb'))
     response = HttpResponse(wrapper, content_type='text/plain')
