@@ -10,13 +10,13 @@ from bs4 import BeautifulSoup
 
 class HuoBiECurrency:
     def __init__(self):
-        self.btc_url = "https://api.btctrade.com/api/ticker?coin=btc"
-        self.ltc_url = "https://api.btctrade.com/api/ticker?coin=ltc"
-        self.eth_url = "https://api.btctrade.com/api/ticker?coin=eth"
+        self.btc_url = "http://api.huobi.com/staticmarket/ticker_btc_json.js"
+        self.ltc_url = "http://api.huobi.com/staticmarket/ticker_ltc_json.js"
+        self.eth_url = "http://be.huobi.com/market/trade?symbol=ethcny"
 
-    def get_html(self, url):
+    def get_html(self, url, data=None):
         headers = {}
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, params=data)
         return response.text
 
     @property
@@ -26,9 +26,9 @@ class HuoBiECurrency:
         eth = json.loads(self.get_html(self.eth_url))
 
         return {
-            "btc": btc.get("last"),
-            "ltc": ltc.get("last"),
-            "eth": eth.get("last"),
+            "btc": btc.get("ticker").get("last"),
+            "ltc": ltc.get("ticker").get("last"),
+            "eth": eth.get("tick").get("data")[0].get('price')
         }
 
 
@@ -48,4 +48,9 @@ class BTCECurrency:
             "eth_to_btc": eth_btc_number,
             "eth_to_ltc": eth_ltc_number
         }
+
+
+if __name__ == '__main__':
+    t = HuoBiECurrency()
+    print(t.currency_last_num)
 
